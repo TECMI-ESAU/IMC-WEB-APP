@@ -17,7 +17,7 @@
                 <span>Calculadora IMC</span>
             </a>
             <ul class="nav-links">
-                <li><a href="${pageContext.request.contextPath}/auth?action=login">Iniciar Sesión</a></li>
+                <li><a href="${pageContext.request.contextPath}/login.jsp">Iniciar Sesión</a></li>
             </ul>
         </div>
     </header>
@@ -30,13 +30,20 @@
                     <p class="card-subtitle">Completa tus datos biométricos una sola vez para tu seguimiento</p>
                 </div>
 
-                <c:if test="${not empty param.error}">
+                <c:if test="${not empty error}">
+                    <div class="alert alert-danger">
+                        <strong>Error:</strong> <c:out value="${error}"/>
+                    </div>
+                </c:if>
+                <c:if test="${empty error and not empty param.error}">
                     <div class="alert alert-danger">
                         <strong>Error:</strong> <c:out value="${param.error}"/>
                     </div>
                 </c:if>
 
-                <form action="${pageContext.request.contextPath}/auth?action=registro" method="POST" autocomplete="off">
+                <form action="${pageContext.request.contextPath}/auth" method="POST" autocomplete="off">
+                    <input type="hidden" name="action" value="registro">
+
                     <div class="form-group">
                         <label for="nombreCompleto" class="form-label">Nombre Completo:</label>
                         <input type="text" id="nombreCompleto" name="nombreCompleto" class="form-control" 
@@ -89,7 +96,7 @@
 
                 <div class="text-center mt-4">
                     <p class="form-text">¿Ya tienes una cuenta? 
-                        <a href="${pageContext.request.contextPath}/auth?action=login" style="color: var(--primary); font-weight: 600;">Iniciar Sesión</a>
+                        <a href="${pageContext.request.contextPath}/login.jsp" style="color: var(--primary); font-weight: 600;">Iniciar Sesión</a>
                     </p>
                 </div>
             </div>

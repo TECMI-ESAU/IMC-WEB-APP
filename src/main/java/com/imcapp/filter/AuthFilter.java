@@ -27,6 +27,9 @@ public class AuthFilter implements Filter {
 
         HttpSession session = httpRequest.getSession(false);
         Usuario usuario = (session != null) ? (Usuario) session.getAttribute("usuario") : null;
+        if (usuario == null && session != null) {
+            usuario = (Usuario) session.getAttribute("usuarioLogueado");
+        }
 
         if (usuario == null) {
             httpResponse.sendRedirect(httpRequest.getContextPath() + "/login.jsp?mensaje=Debe+iniciar+sesion+para+calcular+el+IMC");

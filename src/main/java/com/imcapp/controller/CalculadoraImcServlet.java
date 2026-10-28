@@ -41,6 +41,9 @@ public class CalculadoraImcServlet extends HttpServlet {
 
         HttpSession session = request.getSession(false);
         Usuario usuario = (session != null) ? (Usuario) session.getAttribute("usuario") : null;
+        if (usuario == null && session != null) {
+            usuario = (Usuario) session.getAttribute("usuarioLogueado");
+        }
 
         if (usuario == null) {
             response.sendRedirect(request.getContextPath() + "/login.jsp?mensaje=Sesion+expirada.+Inicie+sesion+nuevamente.");
@@ -48,6 +51,10 @@ public class CalculadoraImcServlet extends HttpServlet {
         }
 
         String masaStr = request.getParameter("masaCorporal");
+        if (masaStr == null || masaStr.trim().isEmpty()) {
+            masaStr = request.getParameter("masaCorporalKg");
+        }
+
         if (masaStr == null || masaStr.trim().isEmpty()) {
             request.setAttribute("error", "Debe ingresar el valor de su masa corporal.");
             request.getRequestDispatcher("/calculadora.jsp").forward(request, response);
@@ -82,6 +89,7 @@ public class CalculadoraImcServlet extends HttpServlet {
                 resultado.getClasificacion().getDescripcion()
         );
         registroDAO.insertarRegistro(nuevoRegistro);
+        resultado.setRegistroPersistido(nuevoRegistro);
 
         request.setAttribute("resultado", resultado);
         request.setAttribute("ultimoRegistro", nuevoRegistro);

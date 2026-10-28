@@ -1,14 +1,9 @@
 package com.imcapp.service;
 
-import com.imcapp.dao.IRegistroImcDAO;
 import com.imcapp.model.ClasificacionIMC;
-import com.imcapp.model.RegistroIMC;
 import com.imcapp.model.ResultadoIMC;
 import org.junit.Before;
 import org.junit.Test;
-
-import java.util.Date;
-import java.util.List;
 
 import static org.junit.Assert.*;
 
@@ -19,110 +14,83 @@ public class ImcCalculatorServiceTest {
 
     private IImcCalculatorService calculatorService;
 
-    // Stub en memoria para DAO de prueba
-    private static class MockRegistroImcDAO implements IRegistroImcDAO {
-        private int idCounter = 1;
-        private RegistroIMC ultimoGuardado;
-
-        @Override
-        public boolean insertar(RegistroIMC registro) {
-            registro.setIdRegistro(idCounter++);
-            registro.setFechaRegistro(new Date());
-            this.ultimoGuardado = registro;
-            return true;
-        }
-
-        @Override
-        public List<RegistroIMC> listarPorUsuario(int idUsuario) {
-            return null;
-        }
-
-        @Override
-        public RegistroIMC buscarPorId(int idRegistro) {
-            return ultimoGuardado;
-        }
-    }
-
     @Before
     public void setUp() {
-        calculatorService = new ImcCalculatorServiceImpl(new MockRegistroImcDAO());
+        calculatorService = new ImcCalculatorServiceImpl();
     }
 
     @Test
     public void testCalcularValorImcFormulaQuetelet() {
-        // Peso: 70 kg, Estatura: 1.75 m -> IMC = 70 / (1.75 * 1.75) = 22.857...
-        double imc = calculatorService.calcularValorImc(70.0, 1.75);
+        // Peso: 70 kg, Estatura: 1.75 m -> IMC = 70 / (1.75 * 1.75) = 22.86
+        double imc = calculatorService.calcularIMC(70.0, 1.75);
         assertEquals(22.86, imc, 0.01);
     }
 
     @Test
     public void testClasificacionBajoPeso() {
-        // Peso: 45 kg, Estatura: 1.75 m -> IMC = 14.69 (< 18.5)
-        double imc = calculatorService.calcularValorImc(45.0, 1.75);
-        ClasificacionIMC clasificacion = calculatorService.clasificarImc(imc);
+        // IMC < 18.5
+        ClasificacionIMC clasificacion = calculatorService.evaluarClasificacion(16.5);
         assertEquals(ClasificacionIMC.BAJO_PESO, clasificacion);
-        assertEquals("Bajo peso", clasificacion.getEtiqueta());
+        assertEquals("Bajo Peso", clasificacion.getDescripcion());
     }
 
     @Test
     public void testClasificacionPesoNormal() {
-        // Peso: 68 kg, Estatura: 1.70 m -> IMC = 23.53 (18.5 - 24.9)
-        double imc = calculatorService.calcularValorImc(68.0, 1.70);
-        ClasificacionIMC clasificacion = calculatorService.clasificarImc(imc);
-        assertEquals(ClasificacionIMC.PESO_NORMAL, clasificacion);
-        assertEquals("Peso normal", clasificacion.getEtiqueta());
+        // 18.5 <= IMC <= 24.99
+        ClasificacionIMC clasificacion = calculatorService.evaluarClasificacion(22.86);
+        assertEquals(ClasificacionIMC.NORMAL, clasificacion);
+        assertEquals("Peso Normal (Saludable)", clasificacion.getDescripcion());
     }
 
     @Test
     public void testClasificacionSobrepeso() {
-        // Peso: 80 kg, Estatura: 1.70 m -> IMC = 27.68 (25.0 - 29.9)
-        double imc = calculatorService.calcularValorImc(80.0, 1.70);
-        ClasificacionIMC clasificacion = calculatorService.clasificarImc(imc);
+        // 25.0 <= IMC <= 29.99
+        ClasificacionIMC clasificacion = calculatorService.evaluarClasificacion(27.5);
         assertEquals(ClasificacionIMC.SOBREPESO, clasificacion);
-        assertEquals("Sobrepeso", clasificacion.getEtiqueta());
+        assertEquals("Sobrepeso (Preobesidad)", clasificacion.getDescripcion());
     }
 
     @Test
     public void testClasificacionObesidadClaseI() {
-        // Peso: 95 kg, Estatura: 1.70 m -> IMC = 32.87 (30.0 - 34.9)
-        double imc = calculatorService.calcularValorImc(95.0, 1.70);
-        ClasificacionIMC clasificacion = calculatorService.clasificarImc(imc);
+        // 30.0 <= IMC <= 34.99
+        ClasificacionIMC clasificacion = calculatorService.evaluarClasificacion(32.0);
         assertEquals(ClasificacionIMC.OBESIDAD_I, clasificacion);
+        assertEquals("Obesidad Grado I", clasificacion.getDescripcion());
     }
 
     @Test
     public void testClasificacionObesidadClaseII() {
-        // Peso: 110 kg, Estatura: 1.70 m -> IMC = 38.06 (35.0 - 39.9)
-        double imc = calculatorService.calcularValorImc(110.0, 1.70);
-        ClasificacionIMC clasificacion = calculatorService.clasificarImc(imc);
+        // 35.0 <= IMC <= 39.99
+        ClasificacionIMC clasificacion = calculatorService.evaluarClasificacion(37.5);
         assertEquals(ClasificacionIMC.OBESIDAD_II, clasificacion);
+        assertEquals("Obesidad Grado II", clasificacion.getDescripcion());
     }
 
     @Test
     public void testClasificacionObesidadClaseIII() {
-        // Peso: 130 kg, Estatura: 1.70 m -> IMC = 44.98 (>= 40.0)
-        double imc = calculatorService.calcularValorImc(130.0, 1.70);
-        ClasificacionIMC clasificacion = calculatorService.clasificarImc(imc);
+        // IMC >= 40.0
+        ClasificacionIMC clasificacion = calculatorService.evaluarClasificacion(42.0);
         assertEquals(ClasificacionIMC.OBESIDAD_III, clasificacion);
+        assertEquals("Obesidad Grado III", clasificacion.getDescripcion());
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testPesoNegativoOInvalidoLanzaExcepcion() {
-        calculatorService.calcularValorImc(0.0, 1.75);
+        calculatorService.calcularIMC(0.0, 1.75);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testEstaturaInvalidaLanzaExcepcion() {
-        calculatorService.calcularValorImc(70.0, 0.5);
+        calculatorService.calcularIMC(70.0, 0.5);
     }
 
     @Test
-    public void testCalcularYRegistrarCompleto() {
-        ResultadoIMC resultado = calculatorService.calcularYRegistrar(1, 75.0, 1.80);
+    public void testGenerarResultadoCompleto() {
+        ResultadoIMC resultado = calculatorService.generarResultado(70.0, 1.75);
         assertNotNull(resultado);
-        assertEquals(23.15, resultado.getValorImc(), 0.01);
-        assertEquals(ClasificacionIMC.PESO_NORMAL, resultado.getClasificacion());
-        assertNotNull(resultado.getRegistroPersistido());
-        assertEquals(1, resultado.getRegistroPersistido().getIdRegistro());
+        assertEquals(22.86, resultado.getValorImc(), 0.01);
+        assertEquals(ClasificacionIMC.NORMAL, resultado.getClasificacion());
+        assertTrue(resultado.getPesoMinimoSaludable() > 0);
+        assertTrue(resultado.getPesoMaximoSaludable() > resultado.getPesoMinimoSaludable());
     }
 }

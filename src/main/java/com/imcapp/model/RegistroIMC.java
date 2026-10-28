@@ -65,12 +65,28 @@ public class RegistroIMC implements Serializable {
         this.masaCorporal = masaCorporal;
     }
 
+    public double getMasaCorporalKg() {
+        return masaCorporal;
+    }
+
+    public void setMasaCorporalKg(double masaCorporalKg) {
+        this.masaCorporal = masaCorporalKg;
+    }
+
     public double getEstatura() {
         return estatura;
     }
 
     public void setEstatura(double estatura) {
         this.estatura = estatura;
+    }
+
+    public double getEstaturaMetros() {
+        return estatura;
+    }
+
+    public void setEstaturaMetros(double estaturaMetros) {
+        this.estatura = estaturaMetros;
     }
 
     public double getValorImc() {
@@ -95,6 +111,14 @@ public class RegistroIMC implements Serializable {
 
     public void setFechaMedicion(Date fechaMedicion) {
         this.fechaMedicion = fechaMedicion;
+    }
+
+    public Date getFechaRegistro() {
+        return fechaMedicion;
+    }
+
+    public void setFechaRegistro(Date fechaRegistro) {
+        this.fechaMedicion = fechaRegistro;
     }
 
     @Override

@@ -97,6 +97,14 @@ public class Usuario implements Serializable {
         this.estatura = estatura;
     }
 
+    public double getEstaturaMetros() {
+        return estatura;
+    }
+
+    public void setEstaturaMetros(double estaturaMetros) {
+        this.estatura = estaturaMetros;
+    }
+
     public Date getFechaRegistro() {
         return fechaRegistro;
     }

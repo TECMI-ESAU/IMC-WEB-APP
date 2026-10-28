@@ -7,4 +7,5 @@ public interface IRegistroImcDAO {
     boolean insertarRegistro(RegistroIMC registro);
     List<RegistroIMC> listarPorUsuario(int idUsuario);
     RegistroIMC obtenerUltimoRegistro(int idUsuario);
+    RegistroIMC obtenerPorId(int idRegistro);
 }

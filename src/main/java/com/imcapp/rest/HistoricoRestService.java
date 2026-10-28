@@ -45,7 +45,6 @@ public class HistoricoRestService {
         this.calculatorService = new ImcCalculatorServiceImpl();
     }
 
-    // Constructor para inyección en pruebas unitarias
     public HistoricoRestService(IRegistroImcDAO registroImcDAO, IUsuarioDAO usuarioDAO, IImcCalculatorService calculatorService) {
         this.registroImcDAO = registroImcDAO;
         this.usuarioDAO = usuarioDAO;
@@ -55,9 +54,6 @@ public class HistoricoRestService {
     /**
      * Obtiene el listado completo de mediciones históricas de un usuario por su ID.
      * Endpoint: GET /api/historico/{idUsuario}
-     *
-     * @param idUsuario Identificador del usuario
-     * @return 200 OK con la lista de registros | 400 Bad Request si el ID es inválido | 404 Not Found si el usuario no existe | 500 Internal Error
      */
     @GET
     @Path("/{idUsuario}")
@@ -71,7 +67,7 @@ public class HistoricoRestService {
         }
 
         try {
-            Usuario usuario = usuarioDAO.buscarPorId(idUsuario);
+            Usuario usuario = usuarioDAO.obtenerPorId(idUsuario);
             if (usuario == null) {
                 Map<String, Object> error = new HashMap<>();
                 error.put("status", 404);
@@ -95,9 +91,6 @@ public class HistoricoRestService {
     /**
      * Obtiene una medición individual por su ID de registro.
      * Endpoint: GET /api/historico/detalle/{idRegistro}
-     *
-     * @param idRegistro Identificador único del registro de medición
-     * @return 200 OK con el registro | 404 Not Found si no existe
      */
     @GET
     @Path("/detalle/{idRegistro}")
@@ -111,7 +104,7 @@ public class HistoricoRestService {
         }
 
         try {
-            RegistroIMC registro = registroImcDAO.buscarPorId(idRegistro);
+            RegistroIMC registro = registroImcDAO.obtenerPorId(idRegistro);
             if (registro == null) {
                 Map<String, Object> error = new HashMap<>();
                 error.put("status", 404);
@@ -129,23 +122,19 @@ public class HistoricoRestService {
     /**
      * Crea un nuevo registro de medición IMC vía REST API.
      * Endpoint: POST /api/historico
-     *
-     * @param nuevoRegistro Datos con idUsuario y masaCorporalKg
-     * @param uriInfo Información del contexto URI para hypermedia Location
-     * @return 201 Created con el registro persistido y cabecera Location | 400 Bad Request
      */
     @POST
     public Response registrarMedicion(RegistroIMC nuevoRegistro, @Context UriInfo uriInfo) {
-        if (nuevoRegistro == null || nuevoRegistro.getIdUsuario() <= 0 || nuevoRegistro.getMasaCorporalKg() <= 0) {
+        if (nuevoRegistro == null || nuevoRegistro.getIdUsuario() <= 0 || nuevoRegistro.getMasaCorporal() <= 0) {
             Map<String, Object> error = new HashMap<>();
             error.put("status", 400);
             error.put("error", "Bad Request");
-            error.put("mensaje", "Datos incompletos o inválidos: idUsuario y masaCorporalKg (> 0) son obligatorios.");
+            error.put("mensaje", "Datos incompletos o inválidos: idUsuario y masaCorporal (> 0) son obligatorios.");
             return Response.status(Response.Status.BAD_REQUEST).entity(error).build();
         }
 
         try {
-            Usuario usuario = usuarioDAO.buscarPorId(nuevoRegistro.getIdUsuario());
+            Usuario usuario = usuarioDAO.obtenerPorId(nuevoRegistro.getIdUsuario());
             if (usuario == null) {
                 Map<String, Object> error = new HashMap<>();
                 error.put("status", 404);
@@ -154,14 +143,26 @@ public class HistoricoRestService {
                 return Response.status(Response.Status.NOT_FOUND).entity(error).build();
             }
 
-            ResultadoIMC resultado = calculatorService.calcularYRegistrar(
-                    nuevoRegistro.getIdUsuario(),
-                    nuevoRegistro.getMasaCorporalKg(),
-                    usuario.getEstaturaMetros()
+            ResultadoIMC resultado = calculatorService.generarResultado(
+                    nuevoRegistro.getMasaCorporal(),
+                    usuario.getEstatura()
             );
 
-            URI createdUri = uriInfo.getAbsolutePathBuilder().path("detalle").path(String.valueOf(resultado.getRegistroPersistido().getIdRegistro())).build();
-            return Response.created(createdUri).entity(resultado.getRegistroPersistido()).build();
+            RegistroIMC registroPersistir = new RegistroIMC(
+                    nuevoRegistro.getIdUsuario(),
+                    nuevoRegistro.getMasaCorporal(),
+                    usuario.getEstatura(),
+                    resultado.getValorImc(),
+                    resultado.getClasificacion().getDescripcion()
+            );
+
+            boolean insertado = registroImcDAO.insertarRegistro(registroPersistir);
+            if (!insertado) {
+                return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("No se pudo guardar la medición").build();
+            }
+
+            URI createdUri = uriInfo.getAbsolutePathBuilder().path("detalle").path(String.valueOf(registroPersistir.getIdRegistro())).build();
+            return Response.created(createdUri).entity(registroPersistir).build();
         } catch (IllegalArgumentException ex) {
             Map<String, Object> error = new HashMap<>();
             error.put("status", 400);
