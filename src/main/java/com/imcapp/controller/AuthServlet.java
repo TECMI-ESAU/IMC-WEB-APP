@@ -7,6 +7,7 @@ import com.imcapp.service.IImcCalculatorService;
 import com.imcapp.service.ImcCalculatorServiceImpl;
 
 import java.io.IOException;
+import java.util.logging.Logger;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -16,6 +17,7 @@ import javax.servlet.http.HttpSession;
 public class AuthServlet extends HttpServlet {
 
     private static final long serialVersionUID = 1L;
+    private static final Logger LOGGER = Logger.getLogger(AuthServlet.class.getName());
 
     private IUsuarioDAO usuarioDAO;
     private IImcCalculatorService imcService;
@@ -49,6 +51,17 @@ public class AuthServlet extends HttpServlet {
         request.setCharacterEncoding("UTF-8");
         String action = request.getParameter("action");
 
+        // Detección automática por presencia de campos si el parámetro action no vino en el POST
+        if (action == null || action.trim().isEmpty()) {
+            if (request.getParameter("nombreCompleto") != null || request.getParameter("estatura") != null) {
+                action = "registro";
+            } else if (request.getParameter("username") != null && request.getParameter("password") != null) {
+                action = "login";
+            }
+        }
+
+        LOGGER.info("AuthServlet doPost recibido con action=" + action);
+
         if ("login".equalsIgnoreCase(action)) {
             procesarLogin(request, response);
         } else if ("registro".equalsIgnoreCase(action)) {
@@ -63,6 +76,8 @@ public class AuthServlet extends HttpServlet {
         String username = request.getParameter("username");
         String password = request.getParameter("password");
 
+        LOGGER.info("Intento de login para username=" + username);
+
         if (username == null || username.trim().isEmpty() || password == null || password.trim().isEmpty()) {
             request.setAttribute("error", "Debe ingresar usuario y contraseña.");
             request.getRequestDispatcher("/login.jsp").forward(request, response);
@@ -71,11 +86,13 @@ public class AuthServlet extends HttpServlet {
 
         Usuario usuario = usuarioDAO.autenticar(username.trim(), password.trim());
         if (usuario != null) {
+            LOGGER.info("Login exitoso para usuario=" + usuario.getUsername());
             HttpSession session = request.getSession(true);
             session.setAttribute("usuario", usuario);
             session.setAttribute("usuarioLogueado", usuario);
             response.sendRedirect(request.getContextPath() + "/calculadora.jsp");
         } else {
+            LOGGER.warning("Credenciales incorrectas para username=" + username);
             request.setAttribute("error", "Credenciales incorrectas. Verifique su usuario y contraseña.");
             request.getRequestDispatcher("/login.jsp").forward(request, response);
         }
@@ -89,6 +106,8 @@ public class AuthServlet extends HttpServlet {
         String edadStr = request.getParameter("edad");
         String sexo = request.getParameter("sexo");
         String estaturaStr = request.getParameter("estatura");
+
+        LOGGER.info("Intento de registro para username=" + username + ", nombre=" + nombreCompleto);
 
         // Validaciones de presencia
         if (nombreCompleto == null || username == null || password == null || 
@@ -136,11 +155,16 @@ public class AuthServlet extends HttpServlet {
 
         if (registrado) {
             Usuario usuarioCreado = usuarioDAO.autenticar(username.trim(), password.trim());
+            Usuario usuarioFinal = (usuarioCreado != null) ? usuarioCreado : nuevoUsuario;
+            
+            LOGGER.info("Registro exitoso en BD y memoria para usuario=" + usuarioFinal.getUsername() + ", id=" + usuarioFinal.getIdUsuario());
+            
             HttpSession session = request.getSession(true);
-            session.setAttribute("usuario", usuarioCreado != null ? usuarioCreado : nuevoUsuario);
-            session.setAttribute("usuarioLogueado", usuarioCreado != null ? usuarioCreado : nuevoUsuario);
+            session.setAttribute("usuario", usuarioFinal);
+            session.setAttribute("usuarioLogueado", usuarioFinal);
             response.sendRedirect(request.getContextPath() + "/calculadora.jsp?mensaje=Registro+completado+con+exito");
         } else {
+            LOGGER.severe("Fallo al registrar usuario=" + username);
             request.setAttribute("error", "Error interno al guardar en base de datos. Intente nuevamente.");
             request.getRequestDispatcher("/registro.jsp").forward(request, response);
         }

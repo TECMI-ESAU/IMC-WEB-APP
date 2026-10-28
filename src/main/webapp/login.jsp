@@ -30,7 +30,12 @@
                     <p class="card-subtitle">Inicia sesión para calcular y registrar tu IMC</p>
                 </div>
 
-                <c:if test="${not empty param.error}">
+                <c:if test="${not empty error}">
+                    <div class="alert alert-danger">
+                        <strong>Error:</strong> <c:out value="${error}"/>
+                    </div>
+                </c:if>
+                <c:if test="${empty error and not empty param.error}">
                     <div class="alert alert-danger">
                         <strong>Error:</strong> <c:out value="${param.error}"/>
                     </div>
@@ -46,7 +51,9 @@
                     </div>
                 </c:if>
 
-                <form action="${pageContext.request.contextPath}/auth?action=login" method="POST" autocomplete="off">
+                <form action="${pageContext.request.contextPath}/auth" method="POST" autocomplete="off">
+                    <input type="hidden" name="action" value="login">
+
                     <div class="form-group">
                         <label for="username" class="form-label">Nombre de Usuario:</label>
                         <input type="text" id="username" name="username" class="form-control" 
