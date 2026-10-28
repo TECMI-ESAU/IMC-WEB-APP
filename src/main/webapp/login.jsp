@@ -17,7 +17,7 @@
                 <span>Calculadora IMC</span>
             </a>
             <ul class="nav-links">
-                <li><a href="${pageContext.request.contextPath}/auth?action=registro">Registrarse</a></li>
+                <li><a href="${pageContext.request.contextPath}/registro.jsp">Registrarse</a></li>
             </ul>
         </div>
     </header>
@@ -66,7 +66,7 @@
 
                 <div class="text-center mt-4">
                     <p class="form-text">¿No tienes una cuenta registrada? 
-                        <a href="${pageContext.request.contextPath}/auth?action=registro" style="color: var(--primary); font-weight: 600;">Regístrate aquí</a>
+                        <a href="${pageContext.request.contextPath}/registro.jsp" style="color: var(--primary); font-weight: 600;">Regístrate aquí</a>
                     </p>
                 </div>
             </div>

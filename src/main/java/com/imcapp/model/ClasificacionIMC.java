@@ -43,6 +43,14 @@ public enum ClasificacionIMC {
         return descripcion;
     }
 
+    public String getEtiqueta() {
+        return descripcion;
+    }
+
+    public String getCodigo() {
+        return name();
+    }
+
     public double getLimiteInferior() {
         return limiteInferior;
     }
@@ -56,6 +64,10 @@ public enum ClasificacionIMC {
     }
 
     public String getNivelRiesgo() {
+        return nivelRiesgo;
+    }
+
+    public String getRecomendacion() {
         return nivelRiesgo;
     }
 }

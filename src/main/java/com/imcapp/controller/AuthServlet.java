@@ -36,8 +36,10 @@ public class AuthServlet extends HttpServlet {
                 session.invalidate();
             }
             response.sendRedirect(request.getContextPath() + "/login.jsp?mensaje=Sesion+cerrada+correctamente");
+        } else if ("registro".equalsIgnoreCase(action)) {
+            request.getRequestDispatcher("/registro.jsp").forward(request, response);
         } else {
-            response.sendRedirect(request.getContextPath() + "/login.jsp");
+            request.getRequestDispatcher("/login.jsp").forward(request, response);
         }
     }
 
@@ -71,6 +73,7 @@ public class AuthServlet extends HttpServlet {
         if (usuario != null) {
             HttpSession session = request.getSession(true);
             session.setAttribute("usuario", usuario);
+            session.setAttribute("usuarioLogueado", usuario);
             response.sendRedirect(request.getContextPath() + "/calculadora.jsp");
         } else {
             request.setAttribute("error", "Credenciales incorrectas. Verifique su usuario y contraseña.");
@@ -132,8 +135,10 @@ public class AuthServlet extends HttpServlet {
         boolean registrado = usuarioDAO.registrar(nuevoUsuario);
 
         if (registrado) {
+            Usuario usuarioCreado = usuarioDAO.autenticar(username.trim(), password.trim());
             HttpSession session = request.getSession(true);
-            session.setAttribute("usuario", nuevoUsuario);
+            session.setAttribute("usuario", usuarioCreado != null ? usuarioCreado : nuevoUsuario);
+            session.setAttribute("usuarioLogueado", usuarioCreado != null ? usuarioCreado : nuevoUsuario);
             response.sendRedirect(request.getContextPath() + "/calculadora.jsp?mensaje=Registro+completado+con+exito");
         } else {
             request.setAttribute("error", "Error interno al guardar en base de datos. Intente nuevamente.");

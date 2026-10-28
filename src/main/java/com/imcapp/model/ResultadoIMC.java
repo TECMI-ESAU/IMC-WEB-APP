@@ -1,6 +1,7 @@
 package com.imcapp.model;
 
 import java.io.Serializable;
+import java.util.Locale;
 import javax.xml.bind.annotation.XmlRootElement;
 
 @XmlRootElement(name = "resultadoIMC")
@@ -15,6 +16,7 @@ public class ResultadoIMC implements Serializable {
     private String mensajeDiagnostico;
     private double pesoMinimoSaludable;
     private double pesoMaximoSaludable;
+    private RegistroIMC registroPersistido;
 
     public ResultadoIMC() {
     }
@@ -37,6 +39,14 @@ public class ResultadoIMC implements Serializable {
         this.masaCorporal = masaCorporal;
     }
 
+    public double getMasaCorporalKg() {
+        return masaCorporal;
+    }
+
+    public void setMasaCorporalKg(double masaCorporalKg) {
+        this.masaCorporal = masaCorporalKg;
+    }
+
     public double getEstatura() {
         return estatura;
     }
@@ -45,12 +55,24 @@ public class ResultadoIMC implements Serializable {
         this.estatura = estatura;
     }
 
+    public double getEstaturaMetros() {
+        return estatura;
+    }
+
+    public void setEstaturaMetros(double estaturaMetros) {
+        this.estatura = estaturaMetros;
+    }
+
     public double getValorImc() {
         return valorImc;
     }
 
     public void setValorImc(double valorImc) {
         this.valorImc = valorImc;
+    }
+
+    public String getValorImcFormateado() {
+        return String.format(Locale.US, "%.2f", valorImc);
     }
 
     public ClasificacionIMC getClasificacion() {
@@ -83,5 +105,13 @@ public class ResultadoIMC implements Serializable {
 
     public void setPesoMaximoSaludable(double pesoMaximoSaludable) {
         this.pesoMaximoSaludable = pesoMaximoSaludable;
+    }
+
+    public RegistroIMC getRegistroPersistido() {
+        return registroPersistido;
+    }
+
+    public void setRegistroPersistido(RegistroIMC registroPersistido) {
+        this.registroPersistido = registroPersistido;
     }
 }

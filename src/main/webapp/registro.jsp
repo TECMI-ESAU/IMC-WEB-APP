@@ -17,7 +17,7 @@
                 <span>Calculadora IMC</span>
             </a>
             <ul class="nav-links">
-                <li><a href="${pageContext.request.contextPath}/auth?action=login">Iniciar Sesión</a></li>
+                <li><a href="${pageContext.request.contextPath}/login.jsp">Iniciar Sesión</a></li>
             </ul>
         </div>
     </header>
@@ -89,7 +89,7 @@
 
                 <div class="text-center mt-4">
                     <p class="form-text">¿Ya tienes una cuenta? 
-                        <a href="${pageContext.request.contextPath}/auth?action=login" style="color: var(--primary); font-weight: 600;">Iniciar Sesión</a>
+                        <a href="${pageContext.request.contextPath}/login.jsp" style="color: var(--primary); font-weight: 600;">Iniciar Sesión</a>
                     </p>
                 </div>
             </div>
