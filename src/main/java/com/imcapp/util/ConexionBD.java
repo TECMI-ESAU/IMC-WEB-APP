@@ -18,7 +18,7 @@ import javax.sql.DataSource;
  * Soporta de manera transparente y resiliente:
  * 1. DataSource JNDI de GlassFish (jdbc/imc_db o jdbc/__default).
  * 2. MySQL Server (localhost:3306/imc_system_db).
- * 3. Java DB / Apache Derby integrado en NetBeans y GlassFish (localhost:1527/imc_db).
+ * 3. Java DB / Apache Derby integrado en NetBeans y GlassFish
  * 4. Embedded Derby Database (creación automática en disco).
  * 
  * Auto-inicializa las tablas 'usuarios' y 'registros_imc' si no existen.
